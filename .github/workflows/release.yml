@@ -1,0 +1,238 @@
+name: Release NodeLane Act
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing version tag to release (for example v0.1.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+jobs:
+  packages:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Check release identity and version
+        id: version
+        shell: pwsh
+        run: |
+          $package = Get-Content package.json -Raw | ConvertFrom-Json
+          if ($package.name -ne 'nodelane-act') { throw 'Unexpected package name.' }
+          if ($package.version -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') { throw 'Invalid package version.' }
+          if ($env:RELEASE_TAG -ne "v$($package.version)") { throw 'Tag must match package.json version.' }
+          "version=$($package.version)" >> $env:GITHUB_OUTPUT
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+      - run: npm run package
+      - name: Verify offline npm installation
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+        run: npm run test:package -- "dist/packages/nodelane-act-$env:RELEASE_VERSION.tgz"
+      - name: Build and verify MCPB and Registry metadata
+        run: npm run package:mcpb
+      - name: Build static website and bundled downloads
+        run: |
+          npm ci --prefix website
+          npm run build --prefix website
+          node website/scripts/package.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-packages
+          if-no-files-found: error
+          compression-level: 0
+          path: |
+            dist/packages/nodelane-act-website-*.zip
+            dist/packages/nodelane-act-plugin-*.zip
+            dist/packages/nodelane-act-extension-*.zip
+            dist/packages/nodelane-act-*.mcpb
+            dist/packages/nodelane-act-*.tgz
+            dist/packages/server.json
+            dist/packages/server-card.json
+            dist/packages/SHA256SUMS.txt
+
+  docker-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+      - name: Verify the source build used by MCP directories
+        run: docker build --tag nodelane-act-directory-check .
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Verify stdio discovery without a browser or external network
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+          import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+          const transport = new StdioClientTransport({ command: 'docker', args: ['run', '--rm', '-i', '--network', 'none', 'nodelane-act-directory-check'], stderr: 'pipe' });
+          const client = new Client({ name: 'directory-image-check', version: '1' });
+          try {
+            await client.connect(transport);
+            assert.deepEqual((await client.listTools()).tools.map(tool => tool.name), ['site.context', 'site.discover', 'site.execute']);
+            for (const site of ['reddit', 'zhihu']) {
+              const result = await client.callTool({ name: 'site.discover', arguments: { site, operation: 'account' } });
+              assert.equal(result.isError, false);
+              assert.match(result.content[0].text, /inputSchema/);
+            }
+            console.log('Directory image exposes its tools and adapters with no browser or external network.');
+          } finally { await client.close(); }
+          NODE
+
+  release:
+    needs: [packages, docker-build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-packages
+          path: dist/packages
+      - name: Verify checksums
+        working-directory: dist/packages
+        run: sha256sum --check SHA256SUMS.txt
+      - name: Publish versioned GitHub downloads
+        working-directory: dist/packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ needs.packages.outputs.version }}
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { execFileSync } from 'node:child_process';
+          import { createHash } from 'node:crypto';
+          import { mkdtempSync, readFileSync } from 'node:fs';
+          import path from 'node:path';
+          const { RELEASE_TAG: tag, RELEASE_VERSION: version, GITHUB_REPOSITORY: repository, RUNNER_TEMP: temporary } = process.env;
+          assert.equal(tag, `v${version}`);
+          const gh = (...args) => execFileSync('gh', [...args, '--repo', repository], { encoding: 'utf8' });
+          let release;
+          try { release = JSON.parse(gh('release', 'view', tag, '--json', 'assets')); }
+          catch {
+            gh('release', 'create', tag, '--verify-tag', '--title', `NodeLane Act ${tag}`, '--generate-notes');
+            release = { assets: [] };
+          }
+          const files = [`nodelane-act-plugin-${version}.zip`, `nodelane-act-extension-${version}.zip`, `nodelane-act-${version}.mcpb`, `nodelane-act-${version}.tgz`, `nodelane-act-website-${version}.zip`, 'server.json', 'server-card.json', 'SHA256SUMS.txt'];
+          const scratch = mkdtempSync(path.join(temporary, 'existing-release-'));
+          const hash = file => createHash('sha256').update(readFileSync(file)).digest('hex');
+          for (const file of files) {
+            if (release.assets.some(asset => asset.name === file)) {
+              gh('release', 'download', tag, '--pattern', file, '--dir', scratch);
+              assert.equal(hash(path.join(scratch, file)), hash(file), `Refusing to replace changed published asset ${file}; release a new version.`);
+            } else {
+              gh('release', 'upload', tag, file);
+            }
+          }
+          console.log(`Verified ${files.length} release assets for ${repository} ${tag}.`);
+          NODE
+
+  mcp-registry:
+    needs: [packages, release]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-packages
+          path: dist/packages
+      - name: Verify published artifact metadata
+        working-directory: dist/packages
+        run: |
+          sha256sum --check SHA256SUMS.txt
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { readFileSync } from 'node:fs';
+          const metadata = JSON.parse(readFileSync('server.json', 'utf8'));
+          const artifact = metadata.packages[0];
+          const expectedUrl = `https://github.com/${process.env.GITHUB_REPOSITORY}/releases/download/${process.env.RELEASE_TAG}/nodelane-act-${metadata.version}.mcpb`;
+          assert.equal(metadata.name, 'io.github.Wy2926/nodelane-act');
+          assert.equal(artifact.identifier, expectedUrl);
+          const response = await fetch(expectedUrl);
+          if (!response.ok) throw new Error(`Published MCPB is unavailable: ${response.status}`);
+          assert.equal(createHash('sha256').update(Buffer.from(await response.arrayBuffer())).digest('hex'), artifact.fileSha256);
+          NODE
+      - name: Install pinned official MCP publisher
+        env:
+          PUBLISHER_VERSION: "1.8.1"
+        run: |
+          base="https://github.com/modelcontextprotocol/registry/releases/download/v${PUBLISHER_VERSION}"
+          curl --fail --location --retry 3 "$base/mcp-publisher_linux_amd64.tar.gz" --output mcp-publisher_linux_amd64.tar.gz
+          curl --fail --location --retry 3 "$base/registry_${PUBLISHER_VERSION}_checksums.txt" --output publisher-checksums.txt
+          sha256sum --check --ignore-missing publisher-checksums.txt
+          tar -xzf mcp-publisher_linux_amd64.tar.gz mcp-publisher
+          ./mcp-publisher validate dist/packages/server.json
+      - name: Check for an existing Registry version
+        id: existing
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { appendFileSync, readFileSync } from 'node:fs';
+          const metadata = JSON.parse(readFileSync('dist/packages/server.json', 'utf8'));
+          const url = `https://registry.modelcontextprotocol.io/v0.1/servers/${encodeURIComponent(metadata.name)}/versions/${encodeURIComponent(metadata.version)}`;
+          const response = await fetch(url);
+          if (response.status === 404) {
+            appendFileSync(process.env.GITHUB_OUTPUT, 'published=false\n');
+          } else {
+            if (!response.ok) throw new Error(`Registry lookup failed: ${response.status}`);
+            const existing = (await response.json()).server;
+            assert.equal(existing.name, metadata.name);
+            assert.equal(existing.version, metadata.version);
+            const artifact = existing.packages?.find(item => item.registryType === 'mcpb');
+            assert.equal(artifact?.identifier, metadata.packages[0].identifier);
+            assert.equal(artifact?.fileSha256, metadata.packages[0].fileSha256, 'Published Registry version contains different bytes; release a new version.');
+            appendFileSync(process.env.GITHUB_OUTPUT, 'published=true\n');
+          }
+          NODE
+      - name: Authenticate using GitHub OIDC
+        if: steps.existing.outputs.published != 'true'
+        run: ./mcp-publisher login github-oidc
+      - name: Publish to the official MCP Registry
+        if: steps.existing.outputs.published != 'true'
+        run: ./mcp-publisher publish dist/packages/server.json
+      - name: Verify Registry publication
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          const metadata = JSON.parse(readFileSync('dist/packages/server.json', 'utf8'));
+          const url = `https://registry.modelcontextprotocol.io/v0.1/servers/${encodeURIComponent(metadata.name)}/versions/${encodeURIComponent(metadata.version)}`;
+          const response = await fetch(url);
+          if (!response.ok) throw new Error(`Registry verification failed: ${response.status}`);
+          const published = (await response.json()).server;
+          assert.equal(published.packages.find(item => item.registryType === 'mcpb').fileSha256, metadata.packages[0].fileSha256);
+          console.log(`Verified ${metadata.name} ${metadata.version} in the official MCP Registry.`);
+          NODE

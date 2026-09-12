@@ -1,0 +1,9 @@
+{
+  "id": "reddit",
+  "name": "Reddit",
+  "description": "社区、推荐帖子、搜索、评论与账号互动",
+  "hosts": ["www.reddit.com", "old.reddit.com", "reddit.com"],
+  "entry": "./adapter.ts",
+  "operationsExport": "redditOperations",
+  "executeExport": "runReddit"
+}

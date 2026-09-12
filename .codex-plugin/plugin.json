@@ -1,0 +1,29 @@
+{
+  "name": "nodelane-act",
+  "version": "0.1.0",
+  "description": "Use Reddit and Zhihu through your signed-in browser with compact, on-demand MCP tools.",
+  "author": {
+    "name": "NodeLane contributors",
+    "url": "https://act.nodelane.net"
+  },
+  "homepage": "https://act.nodelane.net",
+  "repository": "https://github.com/Wy2926/nodelane-act",
+  "license": "MIT",
+  "keywords": ["browser", "mcp", "reddit", "zhihu", "nodelane"],
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "NodeLane Act",
+    "shortDescription": "Reddit and Zhihu tools for your browser session",
+    "longDescription": "Connect the NodeLane Act browser extension to read recommendations, search communities, paginate answers and comments, and perform supported interactions through your signed-in browser. Tools are discovered for the selected site and return compact results. User-requested writes execute directly. Requires the companion browser extension and Node.js 22 or later on the same computer; Windows is the currently verified platform.",
+    "developerName": "NodeLane contributors",
+    "websiteURL": "https://act.nodelane.net",
+    "privacyPolicyURL": "https://act.nodelane.net/privacy/",
+    "termsOfServiceURL": "https://act.nodelane.net/terms/",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write", "Interactive"],
+    "defaultPrompt": [
+      "Summarize recommendations from my signed-in Zhihu browser tab.",
+      "Find relevant Reddit discussions and summarize the top comments."
+    ]
+  }
+}

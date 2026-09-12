@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "NodeLane Act",
+  "description": "安装后自动连接本地 MCP，让 AI 按用户指令调用网站能力并返回精简结果。",
+  "version": "0.1.0",
+  "minimum_chrome_version": "120",
+  "permissions": ["storage", "tabs", "scripting", "alarms"],
+  "host_permissions": ["http://127.0.0.1/*"],
+  "background": { "service_worker": "background.js", "type": "module" },
+  "action": { "default_title": "NodeLane Act", "default_popup": "popup.html" },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src ws://127.0.0.1:*;"
+  }
+}

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NodeLane Act</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <header>
+      <div class="wordmark"><span class="mark">N</span><div><h1>NodeLane Act</h1><p>网站能力，按需提供给 AI</p></div></div>
+      <div class="connection-row"><div id="connection" class="connection" role="status"><span class="dot"></span><span id="connection-text">正在自动连接</span></div><button id="reconnect" type="button" class="text-button">重新连接</button></div>
+      <p id="connection-detail" class="hint connection-detail" hidden></p>
+    </header>
+    <main>
+      <div id="error" class="error" role="alert" hidden></div>
+      <section id="active-section" hidden aria-labelledby="active-title">
+        <div class="section-heading"><h2 id="active-title">正在执行</h2><span class="tag">来自你的 AI 指令</span></div>
+        <div id="active"></div>
+      </section>
+      <section aria-labelledby="sites-title">
+        <div class="section-heading"><h2 id="sites-title">可用网站</h2><span class="tag quiet">安装时授予访问权限</span></div>
+        <div id="sites"></div>
+        <p class="hint">在 Codex 中告诉 AI 你想做什么。扩展使用浏览器中已登录的网站账号执行操作。</p>
+        <div id="targets" class="targets"></div>
+      </section>
+      <section aria-labelledby="history-title">
+        <h2 id="history-title">最近操作</h2>
+        <p id="history-empty" class="hint">尚无操作。连接就绪后，可直接在 Codex 中开始使用。</p>
+        <div id="history"></div>
+      </section>
+    </main>
+    <footer>自动连接 · 按需调用 <span>NodeLane Act / v0.1</span></footer>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

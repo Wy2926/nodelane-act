@@ -1,0 +1,67 @@
+{
+  "name": "nodelane-act",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "NodeLane Act: compact, on-demand MCP tools for websites in your signed-in browser",
+  "license": "MIT",
+  "author": "NodeLane contributors",
+  "homepage": "https://act.nodelane.net",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Wy2926/nodelane-act.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Wy2926/nodelane-act/issues"
+  },
+  "keywords": ["mcp", "mcp-server", "browser", "reddit", "zhihu", "nodelane"],
+  "bin": {
+    "nodelane-act": "dist/server/index.js"
+  },
+  "files": [
+    "dist/server/**/*.js",
+    "dist/licenses/**",
+    "dist/extension/*.js",
+    "dist/extension/*.json",
+    "dist/extension/*.html",
+    "dist/extension/*.css",
+    "dist/extension/*.png",
+    "dist/extension/*.svg",
+    "dist/EXTENSION.md"
+  ],
+  "publishConfig": { "access": "public" },
+  "overrides": { "tmp": "^0.2.6" },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "start": "node dist/server/index.js",
+    "setup": "node dist/server/index.js setup",
+    "dev": "npm run build && node dist/server/index.js",
+    "precheck": "node scripts/generate.mjs",
+    "pretest": "node scripts/generate.mjs",
+    "bridge": "node dist/server/index.js bridge",
+    "status": "node dist/server/index.js status",
+    "stop": "node dist/server/index.js stop",
+    "test:browser": "npm run build && tsx scripts/browser-smoke.ts",
+    "prepack": "npm run build && node scripts/prepare-npm.mjs",
+    "package": "npm run build && node scripts/prepare-npm.mjs && node scripts/package.mjs && npm pack --ignore-scripts --pack-destination dist/packages",
+    "package:mcpb": "node scripts/mcpb.mjs",
+    "test:package": "node scripts/npm-smoke.mjs"
+  },
+  "devDependencies": {
+    "@anthropic-ai/mcpb": "2.1.2",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@types/chrome": "^0.2.9",
+    "@types/node": "^22.20.2",
+    "@types/ws": "^8.18.1",
+    "esbuild": "^0.25.12",
+    "playwright": "^1.63.0",
+    "tsx": "^4.23.13",
+    "typescript": "^5.9.3",
+    "ws": "^8.21.3",
+    "zod": "^3.25.76"
+  }
+}

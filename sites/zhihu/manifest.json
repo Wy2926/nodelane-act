@@ -1,0 +1,9 @@
+{
+  "id": "zhihu",
+  "name": "知乎",
+  "description": "推荐、问题、回答、文章、评论与账号互动",
+  "hosts": ["www.zhihu.com", "zhuanlan.zhihu.com"],
+  "entry": "./adapter.ts",
+  "operationsExport": "zhihuOperations",
+  "executeExport": "runZhihu"
+}

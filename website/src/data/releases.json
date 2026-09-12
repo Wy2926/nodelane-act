@@ -1,0 +1,23 @@
+{
+  "version": "0.1.0",
+  "files": {
+    "plugin": {
+      "name": "nodelane-act-plugin-0.1.0.zip",
+      "url": "/downloads/nodelane-act-plugin-0.1.0.zip",
+      "bytes": 288740,
+      "sha256": "350931d3b7f83dd8e37317892ff94bac74ed93bad3bafaea6596f0c225883aa5"
+    },
+    "extension": {
+      "name": "nodelane-act-extension-0.1.0.zip",
+      "url": "/downloads/nodelane-act-extension-0.1.0.zip",
+      "bytes": 66648,
+      "sha256": "9c833c5fae0da1b32a62f34eb039b6627e085d8d2b3eb5a1cb869b0fc8f15087"
+    },
+    "mcpb": {
+      "name": "nodelane-act-0.1.0.mcpb",
+      "url": "/downloads/nodelane-act-0.1.0.mcpb",
+      "bytes": 293687,
+      "sha256": "2f3aa65fedfd906c1ea639447e9e553eb9049da517c030fe3b40b55e54321075"
+    }
+  }
+}

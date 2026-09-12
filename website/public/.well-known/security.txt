@@ -1,0 +1,5 @@
+Contact: mailto:contact@nodelane.net
+Expires: 2027-09-12T00:00:00Z
+Preferred-Languages: zh, en
+Canonical: https://act.nodelane.net/.well-known/security.txt
+Policy: https://act.nodelane.net/security/

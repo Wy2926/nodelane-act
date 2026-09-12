@@ -1,0 +1,14 @@
+.git
+.github
+.codex-plugin
+.mcp.json
+node_modules
+dist
+website
+.site-mcp
+test-results
+coverage
+*.log
+.env
+.env.*
+!.env.example

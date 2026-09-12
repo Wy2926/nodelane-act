@@ -1,0 +1,23 @@
+# Dependencies and generated build output at every workspace level.
+node_modules/
+dist/
+coverage/
+.astro/
+/website/public/downloads/
+
+# Browser profiles, local credentials, reports, and caches.
+.site-mcp/
+.nodelane-act/
+test-results/
+playwright-report/
+.cache/
+*.log
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+.DS_Store
+Thumbs.db
+
+# Recreated by scripts/generate.mjs; keep all sites/* source manifests.
+/src/generated/

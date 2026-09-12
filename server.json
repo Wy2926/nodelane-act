@@ -1,0 +1,12 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Wy2926/nodelane-act",
+  "title": "NodeLane Act",
+  "description": "Use Reddit and Zhihu through your local browser extension with three compact, on-demand MCP tools.",
+  "version": "0.1.0",
+  "repository": {
+    "url": "https://github.com/Wy2926/nodelane-act",
+    "source": "github"
+  },
+  "websiteUrl": "https://act.nodelane.net"
+}

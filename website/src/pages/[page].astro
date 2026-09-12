@@ -1,0 +1,7 @@
+---
+import ContentPage from '../components/ContentPage.astro';
+import { pages } from '../data/pages';
+export function getStaticPaths() { return Object.keys(pages.zh).map(page=>({params:{page}})); }
+const {page} = Astro.params;
+---
+<ContentPage lang="zh" page={page!}/>

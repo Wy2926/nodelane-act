@@ -1,0 +1,49 @@
+---
+import '../styles/global.css';
+interface Props { title: string; description: string; lang?: 'zh'|'en'; page?: string; noindex?: boolean; }
+const { title, description, lang='zh', page='', noindex=false } = Astro.props;
+const href = (path='') => `${lang==='en'?'/en':''}/${path ? path+'/' : ''}`;
+const alternate = `${lang==='en'?'':'/en'}/${page ? page+'/' : ''}`;
+const nav = lang==='zh' ? [['platforms','网站支持'],['docs','文档'],['changelog','更新日志']] : [['platforms','Platforms'],['docs','Docs'],['changelog','Changelog']];
+const footer = lang==='zh' ? [['download','下载'],['faq','常见问题'],['about','关于'],['support','联系支持'],['privacy','隐私政策'],['terms','使用条款'],['security','安全与权限'],['cookies','Cookie 说明']] : [['download','Downloads'],['faq','FAQ'],['about','About'],['support','Support'],['privacy','Privacy'],['terms','Terms'],['security','Security'],['cookies','Cookies']];
+const canonical = new URL(href(page), Astro.site).href;
+---
+<!doctype html>
+<html lang={lang==='zh'?'zh-CN':'en'}>
+  <head>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>{title} · NodeLane Act</title><meta name="description" content={description}/>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
+    {noindex ? <meta name="robots" content="noindex, follow"/> : <>
+    <link rel="canonical" href={canonical}/>
+    <link rel="alternate" hreflang="zh-CN" href={`https://act.nodelane.net/${page?page+'/':''}`}/>
+    <link rel="alternate" hreflang="en" href={`https://act.nodelane.net/en/${page?page+'/':''}`}/>
+    <link rel="alternate" hreflang="x-default" href={`https://act.nodelane.net/${page?page+'/':''}`}/>
+    </>}
+    <meta property="og:type" content="website"/><meta property="og:site_name" content="NodeLane Act"/>
+    <meta property="og:title" content={`${title} · NodeLane Act`}/><meta property="og:description" content={description}/>{!noindex&&<meta property="og:url" content={canonical}/>}
+    <meta name="theme-color" content="#f7f9fc"/>
+  </head>
+  <body>
+    <a class="skip" href="#main">{lang==='zh'?'跳到主要内容':'Skip to content'}</a>
+    <header class="site-header">
+      <div class="wrap nav-shell">
+        <a class="brand" href={href()} aria-label="NodeLane Act home"><img src="/favicon.svg" width="32" height="32" alt=""/><span>NodeLane <strong>Act</strong></span></a>
+        <nav class="desktop-nav" aria-label={lang==='zh'?'主要导航':'Main navigation'}>{nav.map(([key,name])=><a href={href(key)} aria-current={page===key?'page':undefined}>{name}</a>)}</nav>
+        <div class="nav-actions"><a class="language" href={alternate} lang={lang==='zh'?'en':'zh-CN'}>{lang==='zh'?'EN':'中文'}</a><a class="button small" href={href('download')}>{lang==='zh'?'获取 Act':'Get Act'}<span aria-hidden="true">↗</span></a></div>
+        <details class="mobile-nav"><summary aria-label={lang==='zh'?'打开菜单':'Open menu'}>☰</summary><nav aria-label={lang==='zh'?'移动导航':'Mobile navigation'}>{nav.map(([key,name])=><a href={href(key)}>{name}</a>)}</nav></details>
+      </div>
+    </header>
+    <main id="main"><slot/></main>
+    <footer class="site-footer"><div class="wrap"><div class="footer-top"><div><a class="brand" href={href()}><img src="/favicon.svg" width="28" height="28" alt=""/><span>NodeLane <strong>Act</strong></span></a><p>{lang==='zh'?'把网站能力，交给你的 AI。':'Website actions. In your AI’s hands.'}</p></div><div class="footer-links">{footer.map(([key,name])=><a href={href(key)}>{name}</a>)}<a href="https://github.com/Wy2926/nodelane-act">GitHub ↗</a><a href="https://nodelane.net">NodeLane ↗</a></div></div><div class="footer-bottom"><span>© 2026 NodeLane contributors · MIT</span><span>{lang==='zh'?'本地执行 · 由你发起':'Runs locally · Directed by you'}</span></div></div></footer>
+    <script>
+      document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach(button => button.addEventListener('click', async () => {
+        const text = button.dataset.copy || document.getElementById(button.dataset.copyTarget || '')?.textContent || '';
+        const original = button.textContent;
+        try { await navigator.clipboard.writeText(text); button.textContent = document.documentElement.lang==='en'?'Copied':'已复制'; }
+        catch { button.textContent = document.documentElement.lang==='en'?'Select and copy below':'请选中下方内容复制'; }
+        setTimeout(()=>button.textContent=original,2200);
+      }));
+    </script>
+  </body>
+</html>

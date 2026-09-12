@@ -219,6 +219,13 @@ async function execute(job: Job): Promise<void> {
     const document = await pageDocument(target.tabId);
     if (!document?.documentId || document.result?.url !== target.url || document.result.readyState !== "complete") throw new TargetChangedError("目标页面已改变或仍在加载，操作未执行。请重新获取网站上下文。");
     if (interrupted(job)) { finish(job, failure("CANCELLED", "请求已取消，操作未执行。")); return; }
+    const pageScript = adapterRegistrations.find(entry => entry.id === target.site)?.pageScript;
+    if (pageScript) {
+      await chrome.scripting.executeScript({ target: { tabId: target.tabId, documentIds: [document.documentId] }, world: "MAIN", files: [pageScript] });
+      if (interrupted(job)) { finish(job, failure("CANCELLED", "请求已取消，操作未执行。")); return; }
+      const current = await pageDocument(target.tabId);
+      if (current?.documentId !== document.documentId || current?.result?.url !== target.url || current?.result?.readyState !== "complete") throw new TargetChangedError("目标页面在准备期间已变化，操作未执行。请重新获取网站上下文。");
+    }
     if (!job.definition.readOnly) await rememberWrite(job.request.id);
     if (interrupted(job)) { finish(job, failure("CANCELLED", "请求已取消，操作未执行。")); return; }
     job.injected = true;

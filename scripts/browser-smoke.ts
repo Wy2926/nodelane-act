@@ -61,7 +61,24 @@ try {
     if (url.pathname.includes("/questions/")) { answerRequests++; await route.fulfill({ contentType: "application/json", body: JSON.stringify({ data: ["1234567890123456789", "1234567890123456790"].map(id => ({ id, type: "answer", content: "<p>精简回答内容</p>", question: { id: 123, title: "测试问题" }, author: { name: "用户", url_token: "fixture" }, voteup_count: 3 })), paging: { is_end: true } }) }); return; }
     await route.fulfill({ status: 404, body: "No fixture" });
   });
+  await browser.route("https://web.whatsapp.com/**", async route => {
+    await route.fulfill({ contentType: "text/html; charset=utf-8", body: `<!doctype html><title>WhatsApp fixture</title><main>Fixture chat</main><script>
+      const chat = {id: '123456789@lid', unreadCount: 0, mute: {expiration: 0}};
+      const message = {id: {_serialized: 'true_123456789@lid_ABC_out', remote: chat.id, fromMe: true}, type: 'chat', star: false, body: '中'.repeat(7000), mediaKey: 'fixture-secret-never-export'};
+      window.fixtureWrites = 0;
+      window.WPP = {
+        loader: {isReady: true}, version: 'fixture',
+        conn: {isAuthenticated: () => true, isMainReady: () => true, getMyUserId: () => '123456789@c.us'},
+        profile: {getMyProfileName: () => 'fixture_user'},
+        chat: {
+          list: () => [chat], get: () => chat, getMessageById: () => message, getMessages: () => [message],
+          starMessage: (id, star) => { window.fixtureWrites++; const old = message.star; setTimeout(() => {message.star = star}, 50); return {id, star: old}; }
+        }
+      };
+    </script>` });
+  });
   const reddit = await browser.newPage(); await reddit.goto("https://www.reddit.com/r/test/");
+  const whatsapp = await browser.newPage(); await whatsapp.goto("https://web.whatsapp.com/");
   const popup = await browser.newPage();
   popup.on("pageerror", error => pageErrors.push(error.message));
   await popup.goto(`chrome-extension://${extensionId}/popup.html`);
@@ -93,7 +110,24 @@ try {
   const targets = await invoke("site.context", {});
   const redditTarget = targets.targets.find((target: { site: string }) => target.site === "reddit");
   const zhihuTarget = targets.targets.find((target: { site: string }) => target.site === "zhihu");
+  const whatsappTarget = targets.targets.find((target: { site: string }) => target.site === "whatsapp");
   assert.ok(redditTarget); assert.ok(zhihuTarget);
+  assert.ok(whatsappTarget);
+  const waAccount = await invoke("site.execute", { targetId: whatsappTarget.targetId, operation: "account", args: {} });
+  assert.equal(waAccount.data.ready, true);
+  const waChat = await invoke("site.execute", { targetId: whatsappTarget.targetId, operation: "chat", args: { chat_id: "123456789@lid" } });
+  assert.equal(waChat.data.muted, false, "WhatsApp mute projection uses expiration when derived fields are missing");
+  const waHistory = await invoke("site.execute", { targetId: whatsappTarget.targetId, operation: "messages", args: { chat_id: "123456789@lid" } });
+  assert.equal(waHistory.data.items[0].text.length, 240);
+  assert.equal(waHistory.data.items[0].chat_id, undefined);
+  assert.equal(waHistory.data.chat_id, "123456789@lid");
+  assert.doesNotMatch(JSON.stringify(waHistory), /fixture-secret-never-export/);
+  const waText = await invoke("site.execute", { targetId: whatsappTarget.targetId, operation: "message", args: { chat_id: "123456789@lid", message_id: "true_123456789@lid_ABC_out" } });
+  const waTail = await invoke("site.execute", { targetId: whatsappTarget.targetId, operation: "message", args: { chat_id: "123456789@lid", message_id: "true_123456789@lid_ABC_out", text_offset: waText.data.next_text_offset } });
+  assert.equal(waText.data.text + waTail.data.text, "中".repeat(7000), "MCP text continuation preserves content beyond the former 6000-character cap");
+  const waStar = await invoke("site.execute", { targetId: whatsappTarget.targetId, operation: "star_message", args: { chat_id: "123456789@lid", message_id: "true_123456789@lid_ABC_out", starred: true } });
+  assert.equal(waStar.data.starred, true, "The MAIN-world adapter observes delayed star state instead of the stale return value");
+  assert.equal(await whatsapp.evaluate(() => (window as any).fixtureWrites), 1);
   const discovered = await invoke("site.discover", { site: "reddit", operation: "feed" });
   assert.equal(discovered.operations.length, 1); assert.doesNotMatch(JSON.stringify(discovered), /zhihu/);
   const feed = await invoke("site.execute", { targetId: redditTarget.targetId, operation: "feed", args: { limit: 1 } });
@@ -128,6 +162,7 @@ try {
   await invoke("site.context", {});
   assert.equal(bridge.connected, true, "Extension rediscovers a restarted local bridge");
   assert.equal(writes, 1, "A reconnect must not replay the prior write");
+  assert.equal(await whatsapp.evaluate(() => (window as any).fixtureWrites), 1, "WhatsApp write is not replayed on reconnect");
   await writeFile(path.join(project, "test-results/browser-smoke.json"), JSON.stringify({ passed: true, browser: browser.browser()?.version(), tools: tools.tools.map(tool => tool.name), checks: ["MV3 service worker loads", "automatic loopback WebSocket discovery", "no pairing or confirmation UI", "stdio MCP lists three tools", "automatic website tab opening", "authorized targets", "site-specific discovery", "Reddit MAIN-world fetch and cursor", "Zhihu MAIN-world fetch and lossless id", "overflow pagination without dropped entries or refetch", "question normal HTML and topic SSR extraction", "topic DOM cursor loads a new card by scrolling", "one direct user-requested mutation", "bridge restart and automatic reconnection without repeated write"], liveWebsiteValidation: false }, null, 2));
   console.log("PASS: real Chromium extension + automatic WebSocket discovery + stdio MCP; fixture reads/pagination and direct write. No live website writes.");
 } finally {

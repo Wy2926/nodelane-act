@@ -62,5 +62,7 @@ export interface AdapterRegistration {
   name: string;
   hosts: string[];
   description: string;
+  /** Optional, locally bundled MAIN-world bootstrap. Never provided by a webpage. */
+  pageScript?: string;
   load: () => Promise<LoadedAdapter>;
 }

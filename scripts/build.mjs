@@ -15,6 +15,10 @@ const serverBuild = await build({ entryPoints: [path.join(root, "src/server/inde
 // MV3 service workers do not support import(). esbuild lowers registered lazy
 // loaders to local Promise initializers when splitting is off; no remote code.
 await build({ entryPoints: [path.join(root, "extension/background.ts"), path.join(root, "extension/popup.ts")], outdir: path.join(root, "dist/extension"), bundle: true, platform: "browser", target: "chrome120", format: "esm", splitting: false, keepNames: false, sourcemap: true });
+const pageBuilds = [];
+for (const adapter of manifests.filter(m => m.resolvedPageScript)) {
+  pageBuilds.push(await build({ entryPoints: [adapter.resolvedPageScript], outfile: path.join(root, "dist/extension", `adapter-${adapter.id}.js`), bundle: true, platform: "browser", target: "chrome120", format: "iife", splitting: false, keepNames: false, metafile: true, legalComments: "inline" }));
+}
 for (const entry of await readdir(path.join(root, "extension"), { withFileTypes: true })) {
   if (entry.isFile() && /\.(html|css|png|svg)$/.test(entry.name)) await copyFile(path.join(root, "extension", entry.name), path.join(root, "dist/extension", entry.name));
 }
@@ -26,7 +30,7 @@ delete manifest.optional_host_permissions;
 await writeFile(path.join(root, "dist/extension/manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
 await copyFile(path.join(root, "extension/identity.json"), path.join(root, "dist/extension/identity.json"));
 const dependencyRoots = new Set();
-for (const filename of Object.keys(serverBuild.metafile.inputs)) {
+for (const filename of [serverBuild, ...pageBuilds].flatMap(result => Object.keys(result.metafile.inputs))) {
   const normalized = filename.replaceAll("\\", "/");
   const marker = normalized.lastIndexOf("node_modules/");
   if (marker < 0) continue;
@@ -40,6 +44,8 @@ for (const dependencyRoot of dependencyRoots) {
   const directory = path.join(root, "dist/licenses", pkg.name.replaceAll("/", "__"));
   await mkdir(directory, { recursive: true });
   for (const file of await readdir(dependencyRoot)) if (/^(license|licence|notice|copying)(\.|$)/i.test(file)) await copyFile(path.join(dependencyRoot, file), path.join(directory, file));
+  // Prebundled browser dependencies can ship additional third-party notices.
+  for (const file of await readdir(path.join(dependencyRoot, "dist")).catch(() => [])) if (/\.(LICENSE|NOTICE)\.txt$/i.test(file)) await copyFile(path.join(dependencyRoot, "dist", file), path.join(directory, file));
   notices.push(`${pkg.name}@${pkg.version}: ${typeof pkg.license === "string" ? pkg.license : JSON.stringify(pkg.license ?? "See bundled license")}`);
 }
 await writeFile(path.join(root, "dist/licenses/DEPENDENCIES.txt"), notices.sort().join("\n") + "\n");

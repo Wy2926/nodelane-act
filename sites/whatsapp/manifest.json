@@ -1,0 +1,10 @@
+{
+  "id": "whatsapp",
+  "name": "WhatsApp Web",
+  "description": "WhatsApp 对话消息、联系人、群组与社群、频道和动态；使用浏览器登录态",
+  "hosts": ["web.whatsapp.com"],
+  "entry": "./adapter.ts",
+  "pageScript": "./bootstrap.ts",
+  "operationsExport": "whatsappOperations",
+  "executeExport": "runWhatsApp"
+}

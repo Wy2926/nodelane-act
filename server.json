@@ -8,5 +8,12 @@
     "url": "https://github.com/Wy2926/nodelane-act",
     "source": "github"
   },
-  "websiteUrl": "https://act.nodelane.net"
+  "websiteUrl": "https://act.nodelane.net",
+  "icons": [
+    {
+      "src": "https://act.nodelane.net/nodelane-logo.png",
+      "mimeType": "image/png",
+      "sizes": ["1254x1254"]
+    }
+  ]
 }

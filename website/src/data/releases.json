@@ -4,20 +4,26 @@
     "plugin": {
       "name": "nodelane-act-plugin-0.1.0.zip",
       "url": "/downloads/nodelane-act-plugin-0.1.0.zip",
-      "bytes": 288740,
-      "sha256": "350931d3b7f83dd8e37317892ff94bac74ed93bad3bafaea6596f0c225883aa5"
+      "bytes": 757695,
+      "sha256": "81e3edf9d67e58e3399e2ada762871b98de0db039bd50683d4cd59a81f4e6cbe"
     },
     "extension": {
       "name": "nodelane-act-extension-0.1.0.zip",
       "url": "/downloads/nodelane-act-extension-0.1.0.zip",
-      "bytes": 66648,
-      "sha256": "9c833c5fae0da1b32a62f34eb039b6627e085d8d2b3eb5a1cb869b0fc8f15087"
+      "bytes": 533278,
+      "sha256": "01e7c6c968309636959ebbf977760466c5dc42affb9bb6bd75ff41e4fb1fc3db"
     },
     "mcpb": {
       "name": "nodelane-act-0.1.0.mcpb",
       "url": "/downloads/nodelane-act-0.1.0.mcpb",
-      "bytes": 293687,
-      "sha256": "2f3aa65fedfd906c1ea639447e9e553eb9049da517c030fe3b40b55e54321075"
+      "bytes": 762563,
+      "sha256": "a13a323d2f6e9cfbeca479280f136e84a5039095485bd74d006bb7ed694a59bf"
+    },
+    "npm": {
+      "name": "nodelane-act-0.1.0.tgz",
+      "url": "/downloads/nodelane-act-0.1.0.tgz",
+      "bytes": 738884,
+      "sha256": "0709e969af3558a48b1d5980e34b40cc172a404fe5d7447c644b66cf96f08d59"
     }
   }
 }

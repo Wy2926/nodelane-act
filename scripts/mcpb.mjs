@@ -32,6 +32,7 @@ const manifest = {
   manifest_version: "0.3",
   name: "nodelane-act",
   display_name: "NodeLane Act",
+  icon: "dist/extension/logo.png",
   version,
   description: template.description,
   long_description: "Use Reddit and Zhihu through your own signed-in browser. Requires Node.js 22 or later and the companion browser extension on the same computer. Install the browser extension separately from the included dist/extension directory or the official extension ZIP. The MCP server and browser connection run locally; NodeLane does not relay your browser traffic through a cloud service. Website writes require authorization in the user's request.",

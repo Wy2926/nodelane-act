@@ -6,7 +6,7 @@ const root = fileURLToPath(new URL('../../', import.meta.url));
 const { version } = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
 const target = path.join(root, 'website/public/downloads');
 await mkdir(target, { recursive: true });
-const names = { plugin: `nodelane-act-plugin-${version}.zip`, extension: `nodelane-act-extension-${version}.zip`, mcpb: `nodelane-act-${version}.mcpb` };
+const names = { plugin: `nodelane-act-plugin-${version}.zip`, extension: `nodelane-act-extension-${version}.zip`, mcpb: `nodelane-act-${version}.mcpb`, npm: `nodelane-act-${version}.tgz` };
 const files = {};
 for (const [key, name] of Object.entries(names)) {
   const source = path.join(root, 'dist/packages', name);

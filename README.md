@@ -6,6 +6,26 @@
 
 [官网](https://act.nodelane.net) · [下载与安装](https://act.nodelane.net/download/) · [GitHub](https://github.com/Wy2926/nodelane-act) · [MIT 许可证](LICENSE)
 
+## 市场安装
+
+已发布至 [官方 MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.Wy2926%2Fnodelane-act/versions/0.1.0) 与 [Smithery](https://smithery.ai/servers/q921381971/nodelane-act)。Glama [条目已批准](https://glama.ai/mcp/servers/Wy2926/nodelane-act)，自动安全与质量检查状态以该页面为准。npm 同名包尚未发布。
+
+先安装 Node.js 22+ 和浏览器扩展，再选择对应客户端运行：
+
+```sh
+npx -y smithery@latest mcp add q921381971/nodelane-act --client codex
+npx -y smithery@latest mcp add q921381971/nodelane-act --client claude-code
+npx -y smithery@latest mcp add q921381971/nodelane-act --client cursor
+```
+
+三行分别对应三个客户端，只运行你需要的一行。Smithery 可能要求其账号登录；浏览器扩展仍需单独加载。Codex 安装及服务启动已验证。Claude Code 的 Smithery 安装默认作用于当前项目；需要用户范围可采用下面的原生命令。无需市场账号的替代方式是官网 TGZ 或 ZIP。
+
+## Docker 与目录扫描
+
+仓库根目录提供 [Dockerfile](Dockerfile) 和 [.dockerignore](.dockerignore)，通过多阶段构建生成 Node.js 22 运行镜像，以非 root 用户运行 stdio MCP。可用 `docker build -t nodelane-act .` 构建，`docker run --rm -i nodelane-act` 启动。GitHub Actions 已验证构建、无网络初始化、三个工具以及两站的参数发现。
+
+Docker 镜像用于目录扫描与 MCP 协议检查。实际网站操作仍需要本机 MCP 与浏览器扩展连接；容器不是托管浏览器服务，不能直接访问宿主浏览器的本机回环端口。
+
 ## 一行配置 MCP
 
 先安装 Node.js 22+ 和 [NodeLane Act 浏览器扩展](https://act.nodelane.net/downloads/nodelane-act-extension-0.1.0.zip)。MCP 在浏览器所在的电脑上运行，首次启动会下载并缓存包，之后由 Agent 自动启动；不需要手动解压 MCP、启动桥接或输入网站 API Key。

@@ -7,7 +7,7 @@ const content = pages[lang][page];
 const parts = (text:string) => text.split(/(https?:\/\/[^\s，。；、）]*[^\s，。；、）.,;:!?)\]]|contact@nodelane\.net)/g);
 ---
 <Layout title={content.title} description={content.lead} lang={lang} page={page}>
-  <div class="page-hero"><div class="wrap"><div class="eyebrow"><span class="tiny-rule"></span>NODELANE ACT / {page.toUpperCase()}</div><h1>{content.title}</h1><p class="lead">{content.lead}</p></div></div>
+  <div class="page-hero"><div class="wrap"><nav class="breadcrumbs" aria-label={lang==='zh'?'面包屑导航':'Breadcrumb'}><a href={lang==='zh'?'/':'/en/'}>NodeLane Act</a><span aria-hidden="true">/</span><span>{content.title}</span></nav><div class="eyebrow"><span class="tiny-rule"></span>NODELANE ACT / {page.toUpperCase()}</div><h1>{content.title}</h1><p class="lead">{content.lead}</p></div></div>
   <div class="wrap article-shell">
     <nav class="page-toc" aria-label={lang==='zh'?'本页目录':'On this page'}><strong>{lang==='zh'?'本页内容':'On this page'}</strong>{content.sections.map((section,i)=><a href={`#section-${i+1}`}>{section.heading}</a>)}</nav>
     <article class="article">{content.sections.map((section,i)=><section id={`section-${i+1}`}><h2>{section.heading}</h2>{section.body.map(text=><p>{parts(text).map(part=>part.startsWith('https://')?<a href={part}>{part.replace('https://','')}</a>:part==='contact@nodelane.net'?<a href={`mailto:${part}`}>{part}</a>:part)}</p>)}{section.list&&<ul>{section.list.map(item=><li>{item}</li>)}</ul>}{section.code&&<><pre><code id={`code-${i}`}>{section.code}</code></pre><button class="copy-button" data-copy="" data-copy-target={`code-${i}`}>{lang==='zh'?'复制代码':'Copy code'}</button></>}</section>)}</article>

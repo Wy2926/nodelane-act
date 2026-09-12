@@ -35,7 +35,7 @@ npm run build
 
 ```powershell
 npm run package
-npm run test:package -- dist/packages/nodelane-act-0.1.0.tgz
+npm run test:package -- dist/packages/nodelane-act-0.2.0.tgz
 npm run package:mcpb
 ```
 

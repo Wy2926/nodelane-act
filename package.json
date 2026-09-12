@@ -1,8 +1,8 @@
 {
   "name": "nodelane-act",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
-  "description": "NodeLane Act: compact, on-demand MCP tools for websites in your signed-in browser",
+  "description": "Use Reddit, Zhihu, X and WhatsApp through your signed-in browser with compact, on-demand MCP tools.",
   "license": "MIT",
   "author": "NodeLane contributors",
   "homepage": "https://act.nodelane.net",
@@ -19,7 +19,9 @@
     "browser",
     "reddit",
     "zhihu",
-    "nodelane"
+    "nodelane",
+    "twitter",
+    "whatsapp"
   ],
   "bin": {
     "nodelane-act": "dist/server/index.js"

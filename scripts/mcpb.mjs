@@ -35,7 +35,7 @@ const manifest = {
   icon: "dist/extension/logo.png",
   version,
   description: template.description,
-  long_description: "Use Reddit and Zhihu through your own signed-in browser. Requires Node.js 22 or later and the companion browser extension on the same computer. Install the browser extension separately from the included dist/extension directory or the official extension ZIP. The MCP server and browser connection run locally; NodeLane does not relay your browser traffic through a cloud service. Website writes require authorization in the user's request.",
+  long_description: "Use Reddit, Zhihu, X and WhatsApp through your own signed-in browser. Requires Node.js 22 or later and the companion browser extension on the same computer. Install the browser extension separately from the included dist/extension directory or the official extension ZIP. The MCP server and browser connection run locally; NodeLane does not relay your browser traffic through a cloud service. Website writes require authorization in the user's request.",
   author: { name: "NodeLane contributors", url: "https://nodelane.net" },
   repository: { type: "git", url: template.repository.url },
   homepage: template.websiteUrl,
@@ -43,7 +43,7 @@ const manifest = {
   support: template.repository.url + "/issues",
   license: "MIT",
   privacy_policies: [template.websiteUrl + "/privacy/"],
-  keywords: ["mcp", "browser", "reddit", "zhihu", "nodelane"],
+  keywords: ["mcp", "browser", "reddit", "zhihu", "twitter", "whatsapp", "nodelane"],
   compatibility: { platforms: ["win32", "darwin", "linux"], runtimes: { node: ">=22" } },
   server: { type: "node", entry_point: "dist/server/index.js", mcp_config: { command: "node", args: ["${__dirname}/dist/server/index.js"] } },
   tools: [
@@ -90,7 +90,7 @@ try {
   await client.connect(transport);
   const { tools } = await client.listTools();
   assert.deepEqual(tools.map(tool => tool.name), ["site.context", "site.discover", "site.execute"]);
-  for (const site of ["reddit", "zhihu"]) {
+  for (const site of ["reddit", "zhihu", "x", "whatsapp"]) {
     const result = await client.callTool({ name: "site.discover", arguments: { site, operation: "account" } });
     assert.equal(result.isError, false);
     assert.match(result.content[0].text, /inputSchema/);
@@ -115,4 +115,4 @@ for (const name of [`nodelane-act-plugin-${version}.zip`, `nodelane-act-extensio
   checksums.push(`${createHash("sha256").update(await readFile(path.join(packages, name))).digest("hex")}  ${name}`);
 }
 await writeFile(path.join(packages, "SHA256SUMS.txt"), checksums.join("\n") + "\n");
-console.log(`MCPB archive passed: extraction, local stdio startup, three tools, Reddit/Zhihu schemas, and disconnected-extension response.\nCreated ${archive}\nRegistry metadata: ${path.join(packages, "server.json")}`);
+console.log(`MCPB archive passed: extraction, local stdio startup, three tools, all four site schemas, and disconnected-extension response.\nCreated ${archive}\nRegistry metadata: ${path.join(packages, "server.json")}`);

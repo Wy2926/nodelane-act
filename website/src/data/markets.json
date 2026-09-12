@@ -1,5 +1,20 @@
 [
-  {"name":"MCP Registry","url":"https://registry.modelcontextprotocol.io/v0.1/servers/io.github.Wy2926%2Fnodelane-act/versions/0.1.0","status":"published"},
-  {"name":"Smithery","url":"https://smithery.ai/servers/q921381971/nodelane-act","status":"published"},
-  {"name":"Glama","url":"https://glama.ai/mcp/servers/Wy2926/nodelane-act","status":"approved"}
+  {
+    "name": "MCP Registry",
+    "url": "https://registry.modelcontextprotocol.io/v0.1/servers/io.github.Wy2926%2Fnodelane-act/versions/0.1.0",
+    "status": "published",
+    "version": "0.1.0"
+  },
+  {
+    "name": "Smithery",
+    "url": "https://smithery.ai/servers/q921381971/nodelane-act",
+    "status": "published",
+    "version": "0.1.0"
+  },
+  {
+    "name": "Glama",
+    "url": "https://glama.ai/mcp/servers/Wy2926/nodelane-act",
+    "status": "approved",
+    "version": "0.1.0"
+  }
 ]

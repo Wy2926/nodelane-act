@@ -4,8 +4,8 @@ import markets from '../data/markets.json';
 interface Props {lang:'zh'|'en'}
 const {lang}=Astro.props;
 const zh=lang==='zh';
-const npm=markets.some(m=>m.name==='npm'&&m.status==='published');
-const smithery=markets.some(m=>m.name==='Smithery'&&m.status==='published');
+const npm=markets.some(m=>m.name==='npm'&&m.status==='published'&&m.version===release.version);
+const smithery=markets.some(m=>m.name==='Smithery'&&m.status==='published'&&m.version===release.version);
 const runner=npm?`npx -y nodelane-act@${release.version}`:`npx -y --package=https://act.nodelane.net/downloads/nodelane-act-${release.version}.tgz nodelane-act`;
 const commands=[{id:'codex',name:'Codex',value:smithery&&!npm?'npx -y smithery@latest mcp add q921381971/nodelane-act --client codex':`codex mcp add nodelane-act -- ${runner}`},{id:'claude-code',name:'Claude Code',value:smithery&&!npm?'npx -y smithery@latest mcp add q921381971/nodelane-act --client claude-code':`claude mcp add --transport stdio --scope user nodelane-act -- ${runner}`},{id:'cursor',name:'Cursor',value:smithery?'npx -y smithery@latest mcp add q921381971/nodelane-act --client cursor':JSON.stringify({mcpServers:{'nodelane-act':{type:'stdio',command:'npx',args:npm?['-y',`nodelane-act@${release.version}`]:['-y',`--package=https://act.nodelane.net/downloads/nodelane-act-${release.version}.tgz`,'nodelane-act']}}},null,2)}];
 ---
@@ -13,7 +13,7 @@ const commands=[{id:'codex',name:'Codex',value:smithery&&!npm?'npx -y smithery@l
   <div class="install-intro"><div><div class="eyebrow">01 / {zh?'安装到你的 AGENT':'INSTALL IN YOUR AGENT'}</div><h2 id="install-heading">{zh?'一行命令，接入 MCP。':'One command. MCP connected.'}</h2><p>{npm?(zh?'通过 npm 获取官方版本，命令同时完成 MCP 注册。':'Get the official npm release and register the MCP in one command.'):smithery?(zh?'通过 Smithery 市场安装，自动写入所选客户端的 MCP 配置。':'Install from Smithery and register the MCP with your chosen client.'):(zh?'先使用官网发布包安装。市场条目通过验证后，这里将切换为市场安装命令。':'Install from the official download package. Market commands will appear here once the listings are verified.')}</p></div><span class="release-badge">{npm?'npm':smithery?'Smithery':'Direct package'} · v{release.version}</span></div>
   <div class="install-tabs" role="tablist" aria-label={zh?'选择 AI 客户端':'Choose your AI client'}>{commands.map((client,i)=><button id={`install-tab-${client.id}`} role="tab" aria-selected={i===0?'true':'false'} aria-controls={`install-panel-${client.id}`} tabindex={i===0?0:-1} data-install-tab={client.id}>{client.name}</button>)}</div>
   {commands.map((client,i)=><div id={`install-panel-${client.id}`} role="tabpanel" aria-labelledby={`install-tab-${client.id}`} hidden={i!==0} data-install-panel={client.id}><div class="command-header"><span>{client.id==='cursor'&&!smithery?'MCP JSON':zh?'在终端中运行':'Run in your terminal'}</span><button class="copy-button" data-copy={client.value}>{zh?'复制':'Copy'}</button></div><pre class="command-code"><code>{client.value}</code></pre><div class="command-footer"><span>{client.id==='cursor'&&!smithery?(zh?'保存到 ~/.cursor/mcp.json':'Save to ~/.cursor/mcp.json'):(zh?'先安装对应客户端的 CLI 和 Node.js 22+。':'Install the client CLI and Node.js 22+ first.')}</span><a href={`${zh?'':'/en'}/${client.id}/`}>{zh?'完整安装与使用指南':'Full setup and usage guide'} →</a></div></div>)}
-  <div class="install-bottom"><span>02</span><p>{zh?'再加载下面的浏览器扩展，打开已登录的 Reddit 或知乎。两个组件自动连接，无需配对。':'Then load the browser extension below and open Reddit or Zhihu while signed in. The two components connect automatically without pairing.'}</p></div>
+  <div class="install-bottom"><span>02</span><p>{zh?'再加载下面的浏览器扩展，打开已登录的 Reddit、知乎、X 或 WhatsApp。两个组件自动连接，无需配对。':'Then load the browser extension below and open Reddit, Zhihu, X or WhatsApp while signed in. The two components connect automatically without pairing.'}</p></div>
 </section>
 <script>
   document.querySelectorAll<HTMLButtonElement>('[data-install-tab]').forEach(tab=>{
